@@ -1,0 +1,59 @@
+{% extends "accounts/base.html" %}
+
+{% block title %}CRF列表 - 管理后台{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">CRF列表</h1>
+        <a href="{% url 'crf_create' %}" class="btn btn-primary">创建新CRF</a>
+    </div>
+
+    {% if crfs %}
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>CRF名称</th>
+                    <th>描述</th>
+                    <th>字段数</th>
+                    <th>状态</th>
+                    <th>创建时间</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for crf in crfs %}
+                <tr>
+                    <td>{{ crf.id }}</td>
+                    <td>{{ crf.name }}</td>
+                    <td>{{ crf.description|default:"无" }}</td>
+                    <td>{{ crf.fields.count }}</td>
+                    <td>
+                        {% if crf.is_active %}
+                            <span class="badge bg-success">启用</span>
+                        {% else %}
+                            <span class="badge bg-secondary">禁用</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ crf.created_at|date:"Y-m-d H:i" }}</td>
+                    <td>
+                        <a href="{% url 'crf_fields' crf.id %}" class="btn btn-sm btn-info">字段管理</a>
+                        <a href="{% url 'crf_edit' crf.id %}" class="btn btn-sm btn-warning">编辑</a>
+                        <a href="{% url 'crf_submissions' crf.id %}" class="btn btn-sm btn-success">查看数据</a>
+                        <a href="{% url 'crf_export' crf.id %}" class="btn btn-sm btn-primary">导出CSV</a>
+                        <a href="{% url 'crf_delete' crf.id %}" class="btn btn-sm btn-danger">删除</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        还没有创建CRF，点击"创建新CRF"开始。
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends "accounts/base.html" %}
+
+{% block title %}字段管理 - {{ crf.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">{{ crf.name }} - 字段管理</h1>
+        <a href="{% url 'crf_field_add' crf.id %}" class="btn btn-primary">添加字段</a>
+    </div>
+
+    <p class="text-muted">{{ crf.description|default:"无描述" }}</p>
+
+    {% if fields %}
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>顺序</th>
+                    <th>字段标识</th>
+                    <th>字段标签</th>
+                    <th>字段类型</th>
+                    <th>必填</th>
+                    <th>选项</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for field in fields %}
+                <tr>
+                    <td>{{ field.field_order }}</td>
+                    <td>{{ field.field_name }}</td>
+                    <td>{{ field.field_label }}</td>
+                    <td>{{ field.get_field_type_display }}</td>
+                    <td>
+                        {% if field.is_required %}
+                            <span class="badge bg-danger">是</span>
+                        {% else %}
+                            <span class="badge bg-secondary">否</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ field.options|default:"无" }}</td>
+                    <td>
+                        <a href="{% url 'crf_field_edit' crf.id field.id %}" class="btn btn-sm btn-warning">编辑</a>
+                        <a href="{% url 'crf_field_delete' crf.id field.id %}" class="btn btn-sm btn-danger">删除</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        还没有添加字段，点击"添加字段"开始定义CRF表单内容。
+    </div>
+    {% endif %}
+
+    <div class="mt-4">
+        <h4>字段类型说明</h4>
+        <ul>
+            <li><strong>文本输入</strong> - 单行文本输入框</li>
+            <li><strong>数字输入</strong> - 只能输入数字</li>
+            <li><strong>日期选择</strong> - 日期选择器</li>
+            <li><strong>下拉选择</strong> - 下拉列表选择</li>
+            <li><strong>多行文本</strong> - 多行文本输入框</li>
+            <li><strong>单选按钮</strong> - 只能选择一个选项</li>
+            <li><strong>多选框</strong> - 可以选择多个选项</li>
+        </ul>
+    </div>
+
+    <a href="{% url 'crf_list' %}" class="btn btn-secondary mt-3">返回CRF列表</a>
+</div>
+{% endblock %}

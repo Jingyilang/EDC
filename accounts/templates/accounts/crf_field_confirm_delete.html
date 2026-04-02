@@ -1,0 +1,23 @@
+{% extends "accounts/base.html" %}
+
+{% block title %}删除字段{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">删除字段</h1>
+    </div>
+
+    <div class="alert alert-danger">
+        <h4 class="alert-heading">确认删除</h4>
+        <p>确定要删除字段 "<strong>{{ field.field_label }}</strong>" 吗？</p>
+        <p class="mb-0">此操作不可恢复。</p>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">确认删除</button>
+        <a href="{% url 'crf_fields' crf.id %}" class="btn btn-secondary">取消</a>
+    </form>
+</div>
+{% endblock %}

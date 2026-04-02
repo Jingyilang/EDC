@@ -1,0 +1,60 @@
+{% extends "accounts/base.html" %}
+
+{% block title %}提交详情 - {{ crf.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">提交详情</h1>
+        <a href="{% url 'crf_submissions' crf.id %}" class="btn btn-secondary">返回列表</a>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h5>{{ crf.name }}</h5>
+        </div>
+        <div class="card-body">
+            <table class="table table-bordered">
+                <tbody>
+                    <tr>
+                        <th width="30%">提交ID</th>
+                        <td>{{ submission.id }}</td>
+                    </tr>
+                    <tr>
+                        <th>提交人</th>
+                        <td>{{ submission.submitted_by.username }}</td>
+                    </tr>
+                    <tr>
+                        <th>提交时间</th>
+                        <td>{{ submission.submitted_at|date:"Y-m-d H:i:s" }}</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <hr>
+
+            <h5>提交的表单数据</h5>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>字段名称</th>
+                        <th>填写内容</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for field_name, field in fields.items %}
+                    <tr>
+                        <td>{{ field.field_label }}</td>
+                        <td>
+                            {% with field_value=data|get_item:field_name %}
+                                {{ field_value|default:"未填写" }}
+                            {% endwith %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

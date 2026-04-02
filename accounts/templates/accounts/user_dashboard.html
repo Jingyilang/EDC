@@ -1,0 +1,73 @@
+{% extends "accounts/base.html" %}
+{% load custom_filters %}
+
+{% block title %}我的工作台 - CRF管理系统{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">我的工作台</h1>
+</div>
+
+    {% if crfs %}
+    <h3>可填写的CRF表单</h3>
+    <div class="row">
+        {% for crf in crfs %}
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{ crf.name }}</h5>
+                    <p class="card-text text-muted">{{ crf.description|default:"无描述" }}</p>
+                    <p class="card-text">
+                        <small class="text-muted">
+                            字段数: {{ crf.fields.count }}
+                            {% if crf.id in crf_submission_counts %}
+                                | 已提交: {{ crf_submission_counts|get_item:crf.id }} 次
+                            {% endif %}
+                        </small>
+                    </p>
+                    <a href="{% url 'crf_fill' crf.id %}" class="btn btn-primary">
+                        {% if crf.id in crf_submission_counts %}
+                            继续添加新数据
+                        {% else %}
+                            填写CRF
+                        {% endif %}
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        当前没有可填写的CRF表单，请联系管理员创建。
+    </div>
+    {% endif %}
+
+    {% if user_submissions %}
+    <h3 class="mt-5">我的提交记录</h3>
+    <div class="table-responsive">
+        <table class="table table-striped table-sm">
+            <thead>
+                <tr>
+                    <th>序号</th>
+                    <th>CRF名称</th>
+                    <th>提交时间</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for submission in user_submissions %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ submission.crf.name }}</td>
+                    <td>{{ submission.submitted_at }}</td>
+                    <td>
+                        <a href="{% url 'crf_withdraw_submission' submission.id %}" class="btn btn-sm btn-danger">撤回</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+{% endblock %}

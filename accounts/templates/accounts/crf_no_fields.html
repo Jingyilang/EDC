@@ -1,0 +1,20 @@
+{% extends "accounts/base.html" %}
+
+{% block title %}无法填写{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">无法填写CRF</h1>
+    </div>
+
+    <div class="alert alert-warning">
+        <h4 class="alert-heading">CRF尚未配置字段</h4>
+        <p>"<strong>{{ crf.name }}</strong>" 还没有添加任何字段，无法进行填写。</p>
+        <hr>
+        <p class="mb-0">请联系管理员为此CRF添加字段后再试。</p>
+    </div>
+
+    <a href="{% url 'user_dashboard' %}" class="btn btn-primary">返回工作台</a>
+</div>
+{% endblock %}

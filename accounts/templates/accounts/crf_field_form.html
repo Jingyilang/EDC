@@ -1,0 +1,73 @@
+{% extends "accounts/base.html" %}
+
+{% block title %}{{ action }}字段 - {{ crf.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">{{ action }}字段 - {{ crf.name }}</h1>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="id_field_name" class="form-label">字段标识符 *</label>
+                {{ form.field_name }}
+                <small class="form-text text-muted">英文字母和下划线，用于程序识别</small>
+                {% if form.field_name.errors %}
+                    <div class="text-danger">{{ form.field_name.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label for="id_field_label" class="form-label">字段显示名称 *</label>
+                {{ form.field_label }}
+                <small class="form-text text-muted">用户在表单中看到的名称</small>
+                {% if form.field_label.errors %}
+                    <div class="text-danger">{{ form.field_label.errors }}</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="id_field_type" class="form-label">字段类型 *</label>
+                {{ form.field_type }}
+                {% if form.field_type.errors %}
+                    <div class="text-danger">{{ form.field_type.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label for="id_field_order" class="form-label">字段顺序</label>
+                {{ form.field_order }}
+                <small class="form-text text-muted">数字越小越靠前显示</small>
+                {% if form.field_order.errors %}
+                    <div class="text-danger">{{ form.field_order.errors }}</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label for="id_options" class="form-label">选项</label>
+            {{ form.options }}
+            <small class="form-text text-muted">用于select/radio/checkbox类型，多个选项用逗号分隔，例如：选项1,选项2,选项3</small>
+            {% if form.options.errors %}
+                <div class="text-danger">{{ form.options.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="mb-3 form-check">
+            {{ form.is_required }}
+            <label class="form-check-label" for="id_is_required">
+                必填字段
+            </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary">{{ action }}字段</button>
+        <a href="{% url 'crf_fields' crf.id %}" class="btn btn-secondary">取消</a>
+    </form>
+</div>
+{% endblock %}
