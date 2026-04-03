@@ -2,42 +2,117 @@
 
 {% block title %}填写CRF - {{ crf.name }}{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* 为底部固定按钮预留空间 */
+    .form-container {
+        padding-bottom: 80px;
+    }
+    
+    /* 底部固定按钮栏 */
+    .fixed-bottom-bar {
+        position: fixed;
+        bottom: 0;
+        left: 240px;  /* 与侧边栏宽度对应 */
+        right: 0;
+        background: #fff;
+        border-top: 1px solid #dee2e6;
+        padding: 15px 20px;
+        z-index: 1030;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    }
+    
+    /* 单选按钮水平排列 */
+    .radio-inline-group {
+        display: flex;
+        gap: 20px;
+        margin-top: 5px;
+    }
+    
+    .radio-inline-group .form-check {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        margin: 0;
+        padding: 0;
+    }
+    
+    .radio-inline-group .form-check-input {
+        position: static;
+        margin: 0;
+    }
+    
+    /* 调整主内容区域，避免被底部栏遮挡 */
+    body {
+        padding-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">填写CRF: {{ crf.name }}</h1>
+<div class="form-container">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">填写CRF: {{ crf.name }}</h1>
+    </div>
+
+    <p class="text-muted">{{ crf.description|default:"无描述" }}</p>
+
+    <form method="post" class="needs-validation" novalidate id="crfForm">
+        {% csrf_token %}
+        
+        <div class="card mb-3">
+            <div class="card-body">
+                {% for field in form %}
+                <div class="form-group mb-3">
+                    <label for="{{ field.id_for_label }}" class="form-label">
+                        {{ field.label }}
+                        {% if field.field.required %}
+                            <span class="text-danger">*</span>
+                        {% endif %}
+                    </label>
+                    
+                    {% if field.field.widget.input_type == 'radio' or 'radio' in field.field.widget.template_name %}
+                        <div class="radio-inline-group">
+                            {% for choice in field.field.choices %}
+                            <div class="form-check">
+                                <input type="radio" 
+                                       name="{{ field.name }}" 
+                                       id="{{ field.id_for_label }}_{{ forloop.counter }}" 
+                                       value="{{ choice.0 }}"
+                                       class="form-check-input"
+                                       {% if field.value == choice.0 %}checked{% endif %}>
+                                <label class="form-check-label" for="{{ field.id_for_label }}_{{ forloop.counter }}">
+                                    {{ choice.1 }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ field }}
+                    {% endif %}
+                    
+                    {% if field.errors %}
+                        {% for error in field.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </form>
 </div>
 
-<p class="text-muted">{{ crf.description|default:"无描述" }}</p>
-
-<form method="post" class="needs-validation" novalidate>
-    {% csrf_token %}
-    
-    <div class="card mb-3">
-        <div class="card-body">
-            {% for field in form %}
-            <div class="form-group mb-3">
-                <label for="{{ field.id_for_label }}" class="form-label">
-                    {{ field.label }}
-                    {% if field.field.required %}
-                        <span class="text-danger">*</span>
-                    {% endif %}
-                </label>
-                {{ field }}
-                {% if field.errors %}
-                    {% for error in field.errors %}
-                        <div class="invalid-feedback d-block">{{ error }}</div>
-                    {% endfor %}
-                {% endif %}
-            </div>
-            {% endfor %}
+<!-- 固定在底部的按钮栏 -->
+<div class="fixed-bottom-bar">
+    <div class="d-flex justify-content-between align-items-center">
+        <span class="text-muted small">带 <span class="text-danger">*</span> 的为必填项</span>
+        <div>
+            <button type="submit" form="crfForm" class="btn btn-primary me-2">提交</button>
+            <a href="{% url 'user_dashboard' %}" class="btn btn-secondary">取消</a>
         </div>
     </div>
-
-    <div class="mb-3">
-        <button type="submit" class="btn btn-primary">提交</button>
-        <a href="{% url 'user_dashboard' %}" class="btn btn-secondary">取消</a>
-    </div>
-</form>
+</div>
 
 <script>
 // 表单验证
