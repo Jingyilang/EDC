@@ -7,6 +7,7 @@ from django.urls import reverse_lazy
 from django.views.decorators.http import require_http_methods
 import json
 import csv
+from datetime import date
 from .forms import CustomLoginForm, RegisterForm, CRFForm, CRFFieldForm, CRFDataEntryForm
 from .models import CRF, CRFField, CRFSubmission
 
@@ -89,13 +90,15 @@ def crf_list(request):
 
 @login_required
 def crf_create(request):
-    """创建CRF"""
     if not request.user.is_superuser:
         return redirect('user_dashboard')
     
     if request.method == 'POST':
         form = CRFForm(request.POST)
-        if form.save():
+        if form.is_valid():  # ✅ 先验证表单
+            crf = form.save(commit=False)   # ✅ 不立即保存
+            crf.created_by = request.user   # ✅ 关键：设置创建者
+            crf.save()                      # ✅ 现在保存
             return redirect('crf_list')
     else:
         form = CRFForm()
@@ -155,9 +158,16 @@ def crf_field_add(request, pk):
     
     crf = get_object_or_404(CRF, pk=pk, created_by=request.user)
     
+    # if request.method == 'POST':
+    #     form = CRFFieldForm(request.POST)
+    #     if form.save():
+    #         return redirect('crf_fields', pk=crf.pk)
     if request.method == 'POST':
         form = CRFFieldForm(request.POST)
-        if form.save():
+        if form.is_valid():           # ✅ 先验证表单
+            field = form.save(commit=False)  # ✅ 不立即保存
+            field.crf = crf           # ✅ 关键：设置所属CRF
+            field.save()              # ✅ 现在保存
             return redirect('crf_fields', pk=crf.pk)
     else:
         form = CRFFieldForm()
@@ -210,18 +220,24 @@ def crf_fill(request, pk):
     
     crf = get_object_or_404(CRF, pk=pk, is_active=True)
     
-    # 检查CRF是否有字段定义
     if not crf.fields.exists():
         return render(request, 'accounts/crf_no_fields.html', {'crf': crf})
     
     if request.method == 'POST':
         form = CRFDataEntryForm(request.POST, crf=crf)
         if form.is_valid():
-            # 每次都创建新提交
+            # 处理日期类型，转换为字符串
+            data = {}
+            for key, value in form.cleaned_data.items():
+                if isinstance(value, date):
+                    data[key] = value.isoformat()
+                else:
+                    data[key] = value
+            
             CRFSubmission.objects.create(
                 crf=crf,
                 submitted_by=request.user,
-                data=json.dumps(form.cleaned_data)
+                data=json.dumps(data)
             )
             return redirect('user_dashboard')
     else:

@@ -22,6 +22,23 @@
         box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
     }
     
+    /* 移动端底部按钮栏适配 */
+    @media (max-width: 768px) {
+        .fixed-bottom-bar {
+            left: 0;
+            padding: 10px 15px;
+        }
+        
+        .fixed-bottom-bar .btn {
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+        
+        .fixed-bottom-bar span.small {
+            font-size: 12px;
+        }
+    }
+    
     /* 单选按钮水平排列 */
     .radio-inline-group {
         display: flex;
