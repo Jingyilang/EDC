@@ -1,0 +1,71 @@
+{% extends "accounts/base.html" %}
+{% load custom_filters %}
+
+{% block title %}患者 {{ patient_submission.patient_id }} - 数据详情{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <div>
+        <h1 class="h2">患者数据详情</h1>
+        <p class="text-muted mb-0">患者号: {{ patient_submission.patient_id }} | 提交人: {{ patient_submission.submitted_by.username }} | 提交时间: {{ patient_submission.submitted_at|date:"Y-m-d H:i:s" }}</p>
+    </div>
+    <div>
+        <a href="{% url 'crf_submissions' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> 返回列表
+        </a>
+    </div>
+</div>
+
+{% for item in submission_data %}
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="bi bi-clipboard-data"></i> {{ item.crf.name }}</h5>
+    </div>
+    <div class="card-body">
+        {% if item.crf.description %}
+        <p class="text-muted">{{ item.crf.description }}</p>
+        {% endif %}
+        
+        <table class="table table-bordered table-striped">
+            <tbody>
+                {% for field_name, field_value in item.data.items %}
+                <tr>
+                    <td class="fw-bold" style="width: 30%;">
+                        {% if field_name in item.fields %}
+                            {{ item.fields|get_item:field_name|get_attr:'field_label' }}
+                            {% if item.fields|get_item:field_name|get_attr:'is_required' %}
+                                <span class="text-danger">*</span>
+                            {% endif %}
+                        {% else %}
+                            {{ field_name }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if field_value is None or field_value == '' %}
+                            <span class="text-muted">-</span>
+                        {% elif field_value is True %}
+                            是
+                        {% elif field_value is False %}
+                            否
+                        {% elif field_value is list %}
+                            {{ field_value|join:", " }}
+                        {% else %}
+                            {{ field_value }}
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="2" class="text-center text-muted">无数据</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% empty %}
+<div class="alert alert-warning">
+    <i class="bi bi-exclamation-triangle"></i> 该患者没有CRF数据。
+</div>
+{% endfor %}
+{% endblock %}

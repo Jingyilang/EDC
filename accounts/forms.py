@@ -113,10 +113,23 @@ class CRFFieldForm(forms.ModelForm):
         }
 
 
+class PatientIDForm(forms.Form):
+    """患者号输入表单"""
+    patient_id = forms.CharField(
+        label='患者号',
+        max_length=100,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': '请输入患者号'
+        })
+    )
+
+
 class CRFDataEntryForm(forms.Form):
     """CRF数据填写表单（动态生成）"""
     def __init__(self, *args, **kwargs):
         crf = kwargs.pop('crf', None)
+        initial_data = kwargs.pop('initial_data', None)
         super().__init__(*args, **kwargs)
         
         if crf:
@@ -125,6 +138,10 @@ class CRFDataEntryForm(forms.Form):
                     'label': field.field_label,
                     'required': field.is_required,
                 }
+                
+                # 如果有初始数据，设置初始值
+                if initial_data and field.field_name in initial_data:
+                    field_kwargs['initial'] = initial_data[field.field_name]
                 
                 if field.field_type == 'text':
                     field_kwargs['widget'] = forms.TextInput(attrs={'class': 'form-control'})

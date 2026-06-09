@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-*8gd-s)fvsn^$-@@5(995*-1bo$bh=4dx)w^3!-z^f^wva@_#3
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['47.116.120.31']
 
 
 # Application definition
@@ -74,10 +74,20 @@ WSGI_APPLICATION = 'edc.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',  # 数据库驱动
+        'NAME': '47_116_120_31',               # 数据库名
+        'USER': '47_116_120_31',                       # 连接用户名
+        'PASSWORD': 'pD6rF7RDJDpHNtnc',                 # 连接用户密码
+        'HOST': '127.0.0.1',                  # 数据库所在ip地址
+        'PORT': '3306'                        # 数据库端口
     }
 }
 
@@ -117,8 +127,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = 'static/'
-STATIC_ROOT = '/www/wwwroot/47.116.120.31/EDC/static/'
-
+STATIC_ROOT = '/www/wwwroot/47.116.120.31/EDC/static/' 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 

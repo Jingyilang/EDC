@@ -1,0 +1,103 @@
+{% extends "accounts/base.html" %}
+{% load custom_filters %}
+
+{% block title %}患者 {{ patient_submission.patient_id }} - CRF列表{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <div>
+        <h1 class="h2">患者 {{ patient_submission.patient_id }}</h1>
+        <p class="text-muted mb-0">请完成以下所有CRF表单，所有必填项完成后可提交</p>
+    </div>
+    <div>
+        <a href="{% url 'user_dashboard' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> 返回工作台
+        </a>
+    </div>
+</div>
+
+{% if can_submit %}
+<div class="alert alert-success">
+    <i class="bi bi-check-circle-fill"></i> <strong>所有CRF已完成！</strong> 您可以提交患者数据了。
+</div>
+{% endif %}
+
+<div class="row">
+    {% for crf in crfs %}
+    <div class="col-md-6 mb-4">
+        <div class="card h-100 {% if crf_status|get_item:crf.id|get_item:'status' == 'completed' or crf_status|get_item:crf.id|get_item:'status' == 'submitted' %}border-success{% elif crf_status|get_item:crf.id|get_item:'status' == 'draft' %}border-warning{% else %}border-secondary{% endif %}">
+            <div class="card-header {% if crf_status|get_item:crf.id|get_item:'status' == 'completed' or crf_status|get_item:crf.id|get_item:'status' == 'submitted' %}bg-success text-white{% elif crf_status|get_item:crf.id|get_item:'status' == 'draft' %}bg-warning{% else %}bg-light{% endif %}">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">{{ crf.name }}</h5>
+                    {% with status=crf_status|get_item:crf.id|get_item:'status' %}
+                    {% if status == 'completed' or status == 'submitted' %}
+                    <span class="badge bg-light text-success"><i class="bi bi-check-circle"></i> 已完成</span>
+                    {% elif status == 'draft' %}
+                    <span class="badge bg-light text-warning"><i class="bi bi-pencil"></i> 草稿</span>
+                    {% else %}
+                    <span class="badge bg-secondary"><i class="bi bi-circle"></i> 未开始</span>
+                    {% endif %}
+                    {% endwith %}
+                </div>
+            </div>
+            <div class="card-body">
+                <p class="card-text text-muted">{{ crf.description|default:"无描述" }}</p>
+                <p class="card-text">
+                    <small class="text-muted">
+                        字段数: {{ crf.fields.count }}
+                        {% if crf_status|get_item:crf.id|get_item:'draft' %}
+                        <br>最后保存: {{ crf_status|get_item:crf.id|get_item:'draft'|get_attr:'updated_at'|date:"Y-m-d H:i" }}
+                        {% endif %}
+                    </small>
+                </p>
+            </div>
+            <div class="card-footer bg-transparent">
+                <a href="{% url 'crf_fill' patient_submission.id crf.id %}" class="btn btn-primary w-100">
+                    {% with status=crf_status|get_item:crf.id|get_item:'status' %}
+                    {% if status == 'completed' or status == 'submitted' %}
+                    <i class="bi bi-pencil"></i> 修改
+                    {% elif status == 'draft' %}
+                    <i class="bi bi-pencil-square"></i> 继续填写
+                    {% else %}
+                    <i class="bi bi-plus-circle"></i> 开始填写
+                    {% endif %}
+                    {% endwith %}
+                </a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle"></i> 当前没有可填写的CRF表单，请联系管理员创建。
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% if crfs %}
+<div class="card mt-4 {% if can_submit %}border-success{% else %}border-secondary{% endif %}">
+    <div class="card-header {% if can_submit %}bg-success text-white{% else %}bg-light{% endif %}">
+        <h5 class="mb-0"><i class="bi bi-send"></i> 提交患者数据</h5>
+    </div>
+    <div class="card-body">
+        {% if can_submit %}
+        <p class="card-text">所有CRF表单已完成，确认无误后可以提交。</p>
+        <form method="post" action="{% url 'patient_submit' patient_submission.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-success btn-lg">
+                <i class="bi bi-check-circle"></i> 提交患者数据
+            </button>
+        </form>
+        {% else %}
+        <p class="card-text text-muted">
+            <i class="bi bi-info-circle"></i> 请完成所有CRF表单后，才能提交患者数据。
+        </p>
+        <button class="btn btn-secondary btn-lg" disabled>
+            <i class="bi bi-lock"></i> 提交患者数据
+        </button>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

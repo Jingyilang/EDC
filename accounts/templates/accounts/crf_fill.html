@@ -69,13 +69,42 @@
 {% block content %}
 <div class="form-container">
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-        <h1 class="h2">填写CRF: {{ crf.name }}</h1>
+        <div>
+            <h1 class="h2">填写CRF: {{ crf.name }}</h1>
+            <p class="text-muted mb-0">患者: {{ patient_submission.patient_id }}</p>
+        </div>
+        <div>
+            <a href="{% url 'patient_crf_list' patient_submission.id %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> 返回CRF列表
+            </a>
+        </div>
     </div>
+
+    {% if error %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle"></i> {{ error }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endif %}
+
+    {% if saved %}
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle"></i> 草稿已保存！
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endif %}
+
+    {% if is_completed %}
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> 此CRF所有必填项已完成，您可以返回CRF列表或继续修改。
+    </div>
+    {% endif %}
 
     <p class="text-muted">{{ crf.description|default:"无描述" }}</p>
 
     <form method="post" class="needs-validation" novalidate id="crfForm">
         {% csrf_token %}
+        <input type="hidden" name="action" id="actionField" value="save">
         
         <div class="card mb-3">
             <div class="card-body">
@@ -122,11 +151,15 @@
 
 <!-- 固定在底部的按钮栏 -->
 <div class="fixed-bottom-bar">
-    <div class="d-flex justify-content-between align-items-center">
+    <div class="d-flex justify-content-between align-items-center flex-wrap">
         <span class="text-muted small">带 <span class="text-danger">*</span> 的为必填项</span>
-        <div>
-            <button type="submit" form="crfForm" class="btn btn-primary me-2">提交</button>
-            <a href="{% url 'user_dashboard' %}" class="btn btn-secondary">取消</a>
+        <div class="btn-group">
+            <button type="submit" form="crfForm" class="btn btn-secondary me-2" onclick="document.getElementById('actionField').value='save';">
+                <i class="bi bi-save"></i> 保存草稿
+            </button>
+            <button type="submit" form="crfForm" class="btn btn-primary" onclick="document.getElementById('actionField').value='submit_crf';">
+                <i class="bi bi-check-circle"></i> 完成并返回
+            </button>
         </div>
     </div>
 </div>
@@ -139,9 +172,15 @@
         var forms = document.getElementsByClassName('needs-validation');
         var validation = Array.prototype.filter.call(forms, function(form) {
             form.addEventListener('submit', function(event) {
-                if (form.checkValidity() === false) {
-                    event.preventDefault();
-                    event.stopPropagation();
+                // 获取当前操作类型
+                var action = document.getElementById('actionField').value;
+                
+                // 只有点击"完成并返回"时才进行必填验证
+                if (action === 'submit_crf') {
+                    if (form.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
                 }
                 form.classList.add('was-validated');
             }, false);

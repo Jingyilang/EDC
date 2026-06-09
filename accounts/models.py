@@ -14,7 +14,7 @@ class CRF(models.Model):
     class Meta:
         verbose_name = 'CRF'
         verbose_name_plural = 'CRF列表'
-        ordering = ['-created_at']
+        ordering = ['created_at']  # 按创建顺序排序，便于显示
     
     def __str__(self):
         return self.name
@@ -49,8 +49,46 @@ class CRFField(models.Model):
         return f"{self.crf.name} - {self.field_label}"
 
 
+class PatientSubmission(models.Model):
+    """患者提交记录（管理一个患者的所有CRF）"""
+    patient_id = models.CharField(max_length=100, verbose_name='患者号')
+    submitted_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='patient_submissions', verbose_name='提交人')
+    is_submitted = models.BooleanField(default=False, verbose_name='是否已提交')
+    submitted_at = models.DateTimeField(null=True, blank=True, verbose_name='提交时间')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+    
+    class Meta:
+        verbose_name = '患者提交记录'
+        verbose_name_plural = '患者提交记录列表'
+        ordering = ['-created_at']
+        unique_together = ['patient_id', 'submitted_by']  # 一个用户不能重复创建同一患者
+    
+    def __str__(self):
+        return f"{self.patient_id} - {self.submitted_by.username}"
+
+
+class CRFDraft(models.Model):
+    """CRF草稿记录（保存未完成的CRF数据）"""
+    patient_submission = models.ForeignKey(PatientSubmission, on_delete=models.CASCADE, related_name='crf_drafts', verbose_name='所属患者提交')
+    crf = models.ForeignKey(CRF, on_delete=models.CASCADE, related_name='drafts', verbose_name='所属CRF')
+    data = models.TextField(verbose_name='草稿JSON数据')
+    is_completed = models.BooleanField(default=False, verbose_name='是否已完成')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+    
+    class Meta:
+        verbose_name = 'CRF草稿'
+        verbose_name_plural = 'CRF草稿列表'
+        ordering = ['crf__created_at']
+        unique_together = ['patient_submission', 'crf']  # 一个患者的一个CRF只能有一个草稿
+    
+    def __str__(self):
+        return f"{self.crf.name} - {self.patient_submission.patient_id}"
+
+
 class CRFSubmission(models.Model):
-    """CRF数据提交记录"""
+    """CRF数据提交记录（最终提交后的数据）"""
+    patient_submission = models.ForeignKey(PatientSubmission, on_delete=models.CASCADE, null=True, blank=True, related_name='crf_submissions', verbose_name='所属患者提交')
     crf = models.ForeignKey(CRF, on_delete=models.CASCADE, related_name='submissions', verbose_name='所属CRF')
     submitted_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='crf_submissions', verbose_name='提交人')
     submitted_at = models.DateTimeField(auto_now_add=True, verbose_name='提交时间')
@@ -59,7 +97,9 @@ class CRFSubmission(models.Model):
     class Meta:
         verbose_name = 'CRF提交记录'
         verbose_name_plural = 'CRF提交记录列表'
-        ordering = ['-submitted_at']
+        ordering = ['crf__created_at']
     
     def __str__(self):
-        return f"{self.crf.name} - {self.submitted_by.username} - {self.submitted_at}"
+        if self.patient_submission:
+            return f"{self.crf.name} - {self.patient_submission.patient_id}"
+        return f"{self.crf.name} - {self.submitted_by.username}"

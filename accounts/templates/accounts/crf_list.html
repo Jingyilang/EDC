@@ -41,8 +41,7 @@
                     <td>
                         <a href="{% url 'crf_fields' crf.id %}" class="btn btn-sm btn-info">字段管理</a>
                         <a href="{% url 'crf_edit' crf.id %}" class="btn btn-sm btn-warning">编辑</a>
-                        <a href="{% url 'crf_submissions' crf.id %}" class="btn btn-sm btn-success">查看数据</a>
-                        <a href="{% url 'crf_export' crf.id %}" class="btn btn-sm btn-primary">导出CSV</a>
+                        <a href="{% url 'crf_submissions' %}" class="btn btn-sm btn-success">查看数据</a>
                         <a href="{% url 'crf_delete' crf.id %}" class="btn btn-sm btn-danger">删除</a>
                     </td>
                 </tr>

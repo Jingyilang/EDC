@@ -1,4 +1,5 @@
 {% extends "accounts/base.html" %}
+{% load custom_filters %}
 
 {% block title %}提交详情 - {{ crf.name }}{% endblock %}
 
@@ -6,7 +7,7 @@
 <div class="container-fluid">
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
         <h1 class="h2">提交详情</h1>
-        <a href="{% url 'crf_submissions' crf.id %}" class="btn btn-secondary">返回列表</a>
+        <a href="{% url 'crf_submissions' %}" class="btn btn-secondary">返回列表</a>
     </div>
 
     <div class="card">
